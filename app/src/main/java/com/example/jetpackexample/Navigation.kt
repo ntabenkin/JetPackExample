@@ -12,6 +12,7 @@ import androidx.compose.material.*
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +31,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import kotlinx.coroutines.launch
 
 @Composable
 fun Navigation() {
@@ -80,42 +82,32 @@ fun CarDetailScreen(name: String?) {
 }
 
 @Composable
-fun ScaffoldWithTopBar() {
+fun UniversalAppBar(title: String, compos: Composable) : Composable {
+    val vm = UserState.current
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(text = "Top App Bar")
-                },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Filled.ArrowBack, "backIcon")
+                title = { Text(title) },
+                actions = {
+                    IconButton(onClick = {
+                        coroutineScope.launch {
+                            vm.signOut()
+                        }
+                    }) {
+                        Icon(Icons.Filled.ExitToApp, null)
                     }
-                },
-                backgroundColor = MaterialTheme.colors.primary,
-                contentColor = Color.White,
-                elevation = 10.dp
+                }
             )
-        }, content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xff8d6e63)),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Content of the page",
-                    fontSize = 30.sp,
-                    color = Color.White
-                )
-            }
+        }) {
 
-        })
+    }
+    return compos
 }
 
 @Composable
 fun MainScreen(navController: NavController) {
+
     var text by remember {
         mutableStateOf("")
     }
@@ -143,6 +135,7 @@ fun MainScreen(navController: NavController) {
     }
 }
 
+
 @Composable
 fun DetailScreen(name: String?, navController: NavController) {
     Box(
@@ -159,12 +152,13 @@ fun DetailScreen(name: String?, navController: NavController) {
     ) {
         Text(text = "To DetailsScreen")
     }
+
+
 }
 
 @Composable
 fun CarHomeContent(navController: NavController) {
     val car = remember { DataProvider.carList }
-
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
     ) {
@@ -196,10 +190,7 @@ fun MyApp(navController: NavController) {
             )
         }, content = {
             CarHomeContent(navController)
-
-        }
-
-    )
+})
 }
 
 
