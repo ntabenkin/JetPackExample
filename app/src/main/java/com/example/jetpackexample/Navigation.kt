@@ -11,20 +11,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -47,16 +45,23 @@ fun Navigation() {
                 navArgument("name") {
                     type = NavType.StringType
                     defaultValue = "Nathan"
-                    nullable = true
+                    nullable = false
                 }
             )
         ) { entry ->
             DetailScreen(name = entry.arguments?.getString("name"), navController = navController)
         }
         composable(Screen.ToCalculator.route) {
-            MyApp(navController = navController)
+            RecyclerContent(navController = navController)
         }
-        composable(Screen.CarDetailScreen.route + "{/name}",
+        composable(Screen.ToDropDown.route) {
+            MyScreen()
+        }
+        composable(Screen.CarDetailScreen.route){
+            CarDetailScreen("nath")
+        }
+        composable(
+            route = Screen.CarDetailScreen.route + "{/name}",
             arguments = listOf(
                 navArgument("name") {
                     type = NavType.StringType
@@ -73,36 +78,118 @@ fun Navigation() {
 
 @Composable
 fun CarDetailScreen(name: String?) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Text(text = "This is the Description of car ,$name")
-    }
-}
-
-@Composable
-fun UniversalAppBar(title: String, compos: Composable) : Composable {
-    val vm = UserState.current
-    val coroutineScope = rememberCoroutineScope()
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(title) },
-                actions = {
-                    IconButton(onClick = {
-                        coroutineScope.launch {
-                            vm.signOut()
-                        }
-                    }) {
-                        Icon(Icons.Filled.ExitToApp, null)
+                title = {
+                    Text(text = "Top App Bar")
+                },
+                navigationIcon = {
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Filled.Menu, "Menu")
                     }
-                }
+                },
+                backgroundColor = MaterialTheme.colors.primary,
+                contentColor = Color.White,
+                elevation = 10.dp
             )
-        }) {
+        }, content = {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 10.dp)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "The Porsche 911 (pronounced Nine Eleven or in German: Neunelfer) is a two-door 2+2 high performance rear-engined sports car introduced in September 1964 by Porsche AG of Stuttgart, Germany. It has a rear-mounted flat-six engine and originally a torsion bar suspension. $name " )
+                }
+            }
+        })
+}
+
+
+
+@Composable
+fun DropdownDemo(navController: NavController) {
+    var expanded by remember { mutableStateOf(false) }
+    val items = listOf("A", "B", "C", "D", "E", "F")
+    val disabledValue = "B"
+    var selectedIndex by remember { mutableStateOf(0) }
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .wrapContentSize(Alignment.TopStart)) {
+        Text(items[selectedIndex],modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = { expanded = true })
+            .background(
+                Color.Gray
+            ))
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Color.Red
+                )
+        ) {
+            items.forEachIndexed { index, s ->
+                DropdownMenuItem(onClick = {
+                    selectedIndex = index
+                    expanded = false
+                }) {
+                    val disabledText = if (s == disabledValue) {
+                        " (Disabled)"
+                    } else {
+                        ""
+                    }
+                    Text(text = s + disabledText)
+                }
+            }
+        }
 
     }
-    return compos
+
+}
+@Composable
+fun MyScreen() {
+
+    Box(Modifier.fillMaxSize(), Alignment.Center) {
+
+        Box {
+            var expanded by remember { mutableStateOf(false) }
+
+            IconButton(onClick = { expanded = !expanded }) {
+                Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
+            }
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                MyMenuItem("item 1")           // Icon visible
+                MyMenuItem("item 2")           // Icon visible
+                MyMenuItem("item 3 long text") // Icon width shrunk to 0
+                MyMenuItem("item 4 long te")   // Icon visible but shrunk
+            }
+            CarDetailScreen("dsd")
+        }
+
+    }
+}
+const val MaterialIconDimension = 24f
+
+@Composable
+fun MyMenuItem(text: String) {
+    DropdownMenuItem(
+        onClick = { }
+    ) {
+        Text(text, Modifier.weight(1f))
+        Icon(
+            imageVector = Icons.Default.Check,
+            contentDescription = null,
+            modifier = Modifier.size(MaterialIconDimension.dp)
+        )
+        CarDetailScreen("")
+    }
 }
 
 @Composable
@@ -138,22 +225,44 @@ fun MainScreen(navController: NavController) {
 
 @Composable
 fun DetailScreen(name: String?, navController: NavController) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Text(text = "Hello ,$name")
-    }
-    Button(
-        onClick = { navController.navigate(Screen.ToCalculator.route) },
+    Column(
+        verticalArrangement = Arrangement.Center,
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .padding(horizontal = 100.dp, vertical = 100.dp)
     ) {
-        Text(text = "To DetailsScreen")
+        Box(
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = "Hello ,$name")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = { navController.navigate(Screen.ToCalculator.route) },
+            modifier = Modifier
+                .align(Alignment.End),
+            enabled = true
+        ) {
+            Text(text = "To DetailsScreen")
+        }
     }
-
-
+}
+@Composable
+fun CarDetailsScreen() {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 100.dp, vertical = 100.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = "The Porsche 911 (pronounced Nine Eleven or in German: Neunelfer) is a two-door 2+2 high performance rear-engined sports car introduced in September 1964 by Porsche AG of Stuttgart, Germany. It has a rear-mounted flat-six engine and originally a torsion bar suspension.")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+    }
 }
 
 @Composable
@@ -172,7 +281,7 @@ fun CarHomeContent(navController: NavController) {
 }
 
 @Composable
-fun MyApp(navController: NavController) {
+fun RecyclerContent(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -180,7 +289,7 @@ fun MyApp(navController: NavController) {
                     Text(text = "Top App Bar")
                 },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = { navController.navigate(Screen.ToDropDown.route) }) {
                         Icon(Icons.Filled.Menu, "Menu")
                     }
                 },
@@ -190,7 +299,7 @@ fun MyApp(navController: NavController) {
             )
         }, content = {
             CarHomeContent(navController)
-})
+        })
 }
 
 
@@ -214,7 +323,7 @@ fun CarListItem(car: Car, navController: NavController) {
         modifier = Modifier
             .padding(horizontal = 8.dp, vertical = 8.dp)
             .fillMaxWidth()
-            .clickable { navController.navigate(Screen.DetailScreen.withArgs(car.make)) },
+            .clickable { navController.navigate(Screen.CarDetailScreen.route) },
         elevation = 2.dp,
         backgroundColor = Color.White,
         shape = RoundedCornerShape(corner = CornerSize(16.dp))

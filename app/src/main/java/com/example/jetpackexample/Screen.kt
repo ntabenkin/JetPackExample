@@ -5,6 +5,7 @@ sealed class Screen( val route: String){
     object DetailScreen : Screen("detail_screen")
     object ToCalculator : Screen("to_calc")
     object CarDetailScreen: Screen("to_car")
+    object ToDropDown : Screen("drop")
 
     fun withArgs(vararg args: String): String{
         return buildString{
