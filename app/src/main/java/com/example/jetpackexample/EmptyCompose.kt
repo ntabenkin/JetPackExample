@@ -50,7 +50,6 @@ class EmptyCompose() : ComponentActivity() {
 
 
 @Composable
-@Preview
 fun RecipeCard() {
     Image(
         painter = painterResource(id = R.drawable.cardview),
